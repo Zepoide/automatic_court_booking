@@ -9,6 +9,7 @@ from selenium.common.exceptions import (
     ElementClickInterceptedException,
     ElementNotInteractableException,
 )
+from datetime import datetime, timedelta
 import time
 import pandas as pd
 
@@ -196,11 +197,27 @@ if __name__ == "__main__":
     url = "https://www.ondepor.com/"
     keys = pd.read_csv("keys.csv", delimiter=";")
 
-    time_wanted = "20:30"
+    wanted_time = "20:30"
     court = 2
     players = ["Joaquin Coviella", "Tim Bloch Bindi", "Juan Miguens"]
 
-    data = {"time": time_wanted, "court": court, "players": players}
+    data = {"time": wanted_time, "court": court, "players": players}
 
     bot = CourtReservationBot(driver_path, url, keys, data)
-    bot.run()
+
+    max_retries = 3
+    attempt = 0
+
+    while attempt < max_retries:
+        try:
+            print(f"Attempt {attempt + 1} of {max_retries}...")
+            bot.run()
+            print("Reservation successful!")
+            break
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            attempt += 1
+            if attempt < max_retries:
+                print(f"Retrying... ({attempt + 1}/{max_retries})")
+            else:
+                print("Max retries reached. Failed to make a reservation.")
